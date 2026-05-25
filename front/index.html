@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AI、個人開発、ガジェット、カフェ、自然スポットを横断して紹介する個人メディア。">
+    <title>AutoTool Notes</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Tech / Gear / Food / Nature</p>
+        <h1>AutoTool Notes</h1>
+        <p class="lead">AIと個人開発、PC周辺ガジェット、カフェや景色の話題を、背景と使いどころまで整理して届けます。</p>
+      </div>
+      <nav class="category-nav" aria-label="カテゴリ">
+        <button type="button" data-category="all" class="active">すべて</button>
+        <button type="button" data-category="it_ai">IT/AI</button>
+        <button type="button" data-category="pc_gadget">ガジェット</button>
+        <button type="button" data-category="food_cafe">カフェ/グルメ</button>
+        <button type="button" data-category="nature_spot">自然/景色</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="content-layout">
+        <div>
+          <h2>Latest Articles</h2>
+          <div id="post-list" class="post-list" aria-live="polite"></div>
+        </div>
+        <article id="post-detail" class="post-detail">
+          <p class="empty-state">記事を選ぶと本文が表示されます。</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>記事には広告・アフィリエイトリンクを含む場合があります。出典を確認し、必要に応じて公式情報も参照してください。</p>
+    </footer>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
