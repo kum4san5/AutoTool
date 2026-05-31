@@ -1,6 +1,7 @@
 const state = {
   posts: [],
-  selectedCategory: 'all'
+  selectedCategory: 'all',
+  selectedSlug: ''
 };
 
 const postList = document.querySelector('#post-list');
@@ -17,6 +18,8 @@ async function loadPosts() {
       throw new Error(`Failed to load index: ${response.status}`);
     }
     state.posts = await response.json();
+    normalizePosts();
+    renderCategoryCounts();
     renderList();
     openInitialPost();
   } catch (error) {
@@ -45,7 +48,7 @@ function renderList() {
   `).join('');
 
   postList.querySelectorAll('[data-slug]').forEach((button) => {
-    button.addEventListener('click', () => openPost(button.dataset.slug));
+    button.addEventListener('click', () => selectPostPreview(button.dataset.slug));
   });
 }
 
@@ -61,13 +64,36 @@ function openInitialPost() {
   const requestedSlug = params.get('post');
   const posts = getFilteredPosts();
   if (requestedSlug) {
-    openPost(requestedSlug);
+    const post = findPost(requestedSlug);
+    if (post) {
+      selectPostPreview(requestedSlug, true);
+      return;
+    }
   } else if (!contentLayout.classList.contains('article-mode') && posts[0]) {
-    renderPostPreview(posts[0]);
+    selectPostPreview(posts[0].slug, false);
   }
 }
 
-async function openPost(slug) {
+function selectPostPreview(slug, updateUrl) {
+  const post = findPost(slug);
+  if (!post) {
+    postDetail.innerHTML = '<p class="error-state">記事を読み込めませんでした。</p>';
+    return;
+  }
+
+  state.selectedSlug = slug;
+  contentLayout.classList.remove('article-mode');
+  document.body.classList.remove('article-open');
+  renderPostPreview(post);
+  postList.querySelectorAll('.post-card').forEach((button) => {
+    button.classList.toggle('active', button.dataset.slug === slug);
+  });
+  if (updateUrl) {
+    window.history.replaceState({}, '', `?post=${encodeURIComponent(slug)}`);
+  }
+}
+
+async function openPostPreview(slug) {
   try {
     const response = await fetch(`./content/posts/${encodeURIComponent(slug)}.json`, { cache: 'no-store' });
     if (!response.ok) {
@@ -81,7 +107,7 @@ async function openPost(slug) {
     postList.querySelectorAll('.post-card').forEach((button) => {
       button.classList.toggle('active', button.dataset.slug === slug);
     });
-    window.history.replaceState({}, '', `?post=${encodeURIComponent(slug)}`);
+    window.history.replaceState({}, '', getPostUrl(post));
   } catch (error) {
     postDetail.innerHTML = '<p class="error-state">記事を読み込めませんでした。</p>';
   }
@@ -91,6 +117,7 @@ function renderPost(post) {
   document.title = post.seoTitle || post.title || 'しろくまナレッジ';
   postDetail.innerHTML = `
     <div class="post-meta">
+      <button type="button" class="back-button" onclick="closePost()">一覧へ戻る</button>
       <span>${escapeHtml(post.date || '')}</span>
       <span class="pill">${escapeHtml(post.category || 'Article')}</span>
       <span class="score">${Number(post.monetizationScore || 0)} pts</span>
@@ -109,11 +136,15 @@ function renderPost(post) {
 
 function renderPostPreview(post) {
   postDetail.innerHTML = `
-    <p class="empty-state">左の記事一覧から読みたい記事を選んでください。</p>
     <div class="preview-pick">
       <span class="pill">${escapeHtml(post.category || 'Article')}</span>
-      <strong>${escapeHtml(post.title || '')}</strong>
+      <h2>${escapeHtml(post.title || '')}</h2>
       <p>${escapeHtml(post.summary || '')}</p>
+      <div class="tag-row">${(post.tags || []).map((tag) => `<span class="pill">#${escapeHtml(tag)}</span>`).join('')}</div>
+      <div class="preview-actions">
+        <a class="read-button" href="${escapeAttribute(getPostUrl(post))}">記事を読む</a>
+        ${post.sourceUrl ? `<a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a>` : ''}
+      </div>
     </div>
   `;
 }
@@ -128,7 +159,7 @@ function closePost() {
   window.history.replaceState({}, '', window.location.pathname);
   const posts = getFilteredPosts();
   if (posts[0]) {
-    renderPostPreview(posts[0]);
+    selectPostPreview(posts[0].slug, false);
   } else {
     postDetail.innerHTML = '<p class="empty-state">記事を選ぶと本文が表示されます。</p>';
   }
@@ -136,6 +167,9 @@ function closePost() {
 
 categoryButtons.forEach((button) => {
   button.addEventListener('click', () => {
+    if (button.disabled) {
+      return;
+    }
     categoryButtons.forEach((item) => item.classList.remove('active'));
     button.classList.add('active');
     state.selectedCategory = button.dataset.category;
@@ -231,6 +265,60 @@ function renderMarkdown(markdown, post, kind) {
   return html.join('');
 }
 
+function normalizePosts() {
+  state.posts = state.posts.map((post) => {
+    return Object.assign({}, post, {
+      categoryId: inferCategoryId(post)
+    });
+  });
+}
+
+function renderCategoryCounts() {
+  const counts = state.posts.reduce((accumulator, post) => {
+    accumulator.all += 1;
+    accumulator[post.categoryId] = (accumulator[post.categoryId] || 0) + 1;
+    return accumulator;
+  }, { all: 0 });
+
+  categoryButtons.forEach((button) => {
+    const category = button.dataset.category;
+    const count = counts[category] || 0;
+    const countElement = button.querySelector('.count');
+    if (countElement) {
+      countElement.textContent = String(count);
+    }
+    button.disabled = category !== 'all' && count === 0;
+    button.classList.toggle('is-empty', category !== 'all' && count === 0);
+  });
+}
+
+function inferCategoryId(post) {
+  const explicit = String(post.categoryId || '').trim();
+  if (['it_ai', 'pc_gadget', 'food_cafe', 'nature_spot'].indexOf(explicit) !== -1) {
+    return explicit;
+  }
+
+  const text = `${post.category || ''} ${(post.tags || []).join(' ')} ${post.title || ''} ${post.summary || ''}`.toLowerCase();
+  if (/(ガジェット|pc|パソコン|キーボード|マウス|モニター|周辺機器|デスク)/i.test(text)) {
+    return 'pc_gadget';
+  }
+  if (/(カフェ|グルメ|コーヒー|ランチ|レストラン|喫茶|食|飲食)/i.test(text)) {
+    return 'food_cafe';
+  }
+  if (/(自然|景色|旅行|観光|公園|山|海|川|森|絶景|散歩|アウトドア)/i.test(text)) {
+    return 'nature_spot';
+  }
+  return 'it_ai';
+}
+
+function findPost(slug) {
+  return state.posts.filter((post) => post.slug === slug)[0] || null;
+}
+
+function getPostUrl(post) {
+  return post.url || `./posts/${encodeURIComponent(post.slug)}/`;
+}
+
 function renderInlineMarkdown(value, post, kind) {
   let html = escapeHtml(value);
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (match, text, url) => {
@@ -271,7 +359,7 @@ function decodeHtml(value) {
 }
 
 function buildTrackedUrl(url, post, kind) {
-  if (!post.clickTrackerUrl) {
+  if (!post.clickTrackerUrl || url === post.sourceUrl) {
     return url;
   }
   const params = new URLSearchParams({
@@ -279,7 +367,8 @@ function buildTrackedUrl(url, post, kind) {
     url,
     slug: post.slug || '',
     kind: kind || 'link',
-    title: post.title || ''
+    title: post.title || '',
+    referrer: document.referrer || ''
   });
   return `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;
 }
@@ -292,7 +381,8 @@ function trackView(post) {
     action: 'event',
     kind: 'view',
     slug: post.slug || '',
-    title: post.title || ''
+    title: post.title || '',
+    referrer: document.referrer || ''
   });
   const img = new Image();
   img.src = `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;

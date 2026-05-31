@@ -20,14 +20,16 @@
         <h1>しろくまナレッジ</h1>
         <p class="lead">AIと個人開発、PC周辺ガジェット、カフェや景色の話題を、背景と使いどころまで整理して届けます。</p>
       </div>
-      <nav class="category-nav" aria-label="カテゴリ">
-        <button type="button" data-category="all" class="active">すべて</button>
-        <button type="button" data-category="it_ai">IT/AI</button>
-        <button type="button" data-category="pc_gadget">ガジェット</button>
-        <button type="button" data-category="food_cafe">カフェ/グルメ</button>
-        <button type="button" data-category="nature_spot">自然/景色</button>
+      <div class="header-controls">
         <button type="button" id="theme-toggle" class="theme-toggle" aria-label="テーマを切り替える">Dark</button>
-      </nav>
+        <nav class="category-nav" aria-label="カテゴリ">
+          <button type="button" data-category="all" class="active">すべて <span class="count">0</span></button>
+          <button type="button" data-category="it_ai">IT/AI <span class="count">0</span></button>
+          <button type="button" data-category="pc_gadget">ガジェット <span class="count">0</span></button>
+          <button type="button" data-category="food_cafe">カフェ/グルメ <span class="count">0</span></button>
+          <button type="button" data-category="nature_spot">自然/景色 <span class="count">0</span></button>
+        </nav>
+      </div>
     </header>
 
     <main>
