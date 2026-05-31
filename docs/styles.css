@@ -207,6 +207,44 @@ main {
   font-size: 13px;
 }
 
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.footer-nav a,
+.page-body a {
+  color: var(--blue);
+}
+
+.page {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.page-body {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: clamp(22px, 4vw, 42px);
+  box-shadow: var(--shadow);
+}
+
+.page-body h2 {
+  margin-top: 28px;
+}
+
+.page-body p,
+.page-body li {
+  color: var(--muted);
+}
+
+.page-body ul {
+  padding-left: 22px;
+}
+
 @media (max-width: 880px) {
   .site-header,
   .content-layout {

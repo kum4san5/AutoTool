@@ -71,6 +71,7 @@ async function openPost(slug) {
     }
     const post = await response.json();
     renderPost(post);
+    trackView(post);
     postList.querySelectorAll('.post-card').forEach((button) => {
       button.classList.toggle('active', button.dataset.slug === slug);
     });
@@ -81,7 +82,7 @@ async function openPost(slug) {
 }
 
 function renderPost(post) {
-  document.title = post.seoTitle || post.title || 'AutoTool Notes';
+  document.title = post.seoTitle || post.title || 'しろくまナレッジ';
   postDetail.innerHTML = `
     <div class="post-meta">
       <span>${escapeHtml(post.date || '')}</span>
@@ -91,9 +92,9 @@ function renderPost(post) {
     <h2>${escapeHtml(post.title || '')}</h2>
     <p class="summary">${escapeHtml(post.summary || post.hook || '')}</p>
     <div class="tag-row">${(post.tags || []).map((tag) => `<span class="pill">#${escapeHtml(tag)}</span>`).join('')}</div>
-    <div class="post-body">${linkify(escapeHtml(post.body || ''))}</div>
+    <div class="post-body">${linkify(escapeHtml(post.body || ''), post, 'body')}</div>
     ${post.cta ? `<div class="cta-box">${escapeHtml(post.cta)}</div>` : ''}
-    ${post.sourceUrl ? `<p><a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a></p>` : ''}
+    ${post.sourceUrl ? `<p><a class="source-link" href="${escapeAttribute(buildTrackedUrl(post.sourceUrl, post, 'source'))}" target="_blank" rel="noopener noreferrer">出典を確認する</a></p>` : ''}
   `;
 }
 
@@ -120,8 +121,39 @@ function escapeAttribute(value) {
   return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
-function linkify(value) {
-  return value.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+function linkify(value, post, kind) {
+  return value.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+    const trackedUrl = buildTrackedUrl(url, post, kind);
+    return `<a href="${escapeAttribute(trackedUrl)}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
+}
+
+function buildTrackedUrl(url, post, kind) {
+  if (!post.clickTrackerUrl) {
+    return url;
+  }
+  const params = new URLSearchParams({
+    action: 'go',
+    url,
+    slug: post.slug || '',
+    kind: kind || 'link',
+    title: post.title || ''
+  });
+  return `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+}
+
+function trackView(post) {
+  if (!post.clickTrackerUrl) {
+    return;
+  }
+  const params = new URLSearchParams({
+    action: 'event',
+    kind: 'view',
+    slug: post.slug || '',
+    title: post.title || ''
+  });
+  const img = new Image();
+  img.src = `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;
 }
 
 loadPosts();
