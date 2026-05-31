@@ -202,19 +202,53 @@ main {
 
 .site-footer {
   border-top: 1px solid var(--line);
-  padding: 22px min(5vw, 64px);
+  padding: 24px min(5vw, 64px);
   color: var(--muted);
   font-size: 13px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+}
+
+.footer-content strong {
+  display: block;
+  color: var(--text);
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.footer-content p {
+  margin: 0;
+  max-width: 720px;
 }
 
 .footer-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 10px;
 }
 
-.footer-nav a,
+.footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 5px 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
 .page-body a {
   color: var(--blue);
 }
@@ -247,11 +281,13 @@ main {
 
 @media (max-width: 880px) {
   .site-header,
-  .content-layout {
+  .content-layout,
+  .footer-content {
     grid-template-columns: 1fr;
   }
 
-  .category-nav {
+  .category-nav,
+  .footer-nav {
     justify-content: flex-start;
   }
 }
