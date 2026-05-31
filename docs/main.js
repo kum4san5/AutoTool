@@ -5,6 +5,7 @@ const state = {
 
 const postList = document.querySelector('#post-list');
 const postDetail = document.querySelector('#post-detail');
+const contentLayout = document.querySelector('.content-layout');
 const categoryButtons = document.querySelectorAll('[data-category]');
 
 async function loadPosts() {
@@ -71,6 +72,7 @@ async function openPost(slug) {
     }
     const post = await response.json();
     renderPost(post);
+    contentLayout.classList.add('reading-mode');
     trackView(post);
     postList.querySelectorAll('.post-card').forEach((button) => {
       button.classList.toggle('active', button.dataset.slug === slug);
@@ -85,6 +87,7 @@ function renderPost(post) {
   document.title = post.seoTitle || post.title || 'しろくまナレッジ';
   postDetail.innerHTML = `
     <div class="post-meta">
+      <button type="button" class="back-button" onclick="closePost()">一覧へ戻る</button>
       <span>${escapeHtml(post.date || '')}</span>
       <span class="pill">${escapeHtml(post.category || 'Article')}</span>
       <span class="score">${Number(post.monetizationScore || 0)} pts</span>
@@ -94,8 +97,17 @@ function renderPost(post) {
     <div class="tag-row">${(post.tags || []).map((tag) => `<span class="pill">#${escapeHtml(tag)}</span>`).join('')}</div>
     <div class="post-body">${linkify(escapeHtml(post.body || ''), post, 'body')}</div>
     ${post.cta ? `<div class="cta-box">${escapeHtml(post.cta)}</div>` : ''}
-    ${post.sourceUrl ? `<p><a class="source-link" href="${escapeAttribute(buildTrackedUrl(post.sourceUrl, post, 'source'))}" target="_blank" rel="noopener noreferrer">出典を確認する</a></p>` : ''}
+    ${post.sourceUrl ? `<p><a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a></p>` : ''}
   `;
+}
+
+function closePost() {
+  contentLayout.classList.remove('reading-mode');
+  postDetail.innerHTML = '<p class="empty-state">記事を選ぶと本文が表示されます。</p>';
+  postList.querySelectorAll('.post-card').forEach((button) => {
+    button.classList.remove('active');
+  });
+  window.history.replaceState({}, '', window.location.pathname);
 }
 
 categoryButtons.forEach((button) => {

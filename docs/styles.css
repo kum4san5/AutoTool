@@ -101,6 +101,26 @@ main {
   align-items: start;
 }
 
+.content-layout.reading-mode {
+  grid-template-columns: minmax(220px, 280px) minmax(0, 860px);
+  justify-content: center;
+}
+
+.content-layout.reading-mode .post-list {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
+.content-layout.reading-mode .post-card {
+  padding: 12px;
+}
+
+.content-layout.reading-mode .post-card p {
+  display: none;
+}
+
 .post-list {
   display: grid;
   gap: 12px;
@@ -185,6 +205,22 @@ main {
 .post-body a,
 .source-link {
   color: var(--blue);
+}
+
+.back-button {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 4px 9px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .cta-box {
@@ -282,8 +318,14 @@ main {
 @media (max-width: 880px) {
   .site-header,
   .content-layout,
+  .content-layout.reading-mode,
   .footer-content {
     grid-template-columns: 1fr;
+  }
+
+  .content-layout.reading-mode .post-list {
+    position: static;
+    max-height: none;
   }
 
   .category-nav,
