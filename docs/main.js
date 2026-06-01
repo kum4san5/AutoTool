@@ -85,6 +85,7 @@ function selectPostPreview(slug, updateUrl) {
   contentLayout.classList.remove('article-mode');
   document.body.classList.remove('article-open');
   renderPostPreview(post);
+  trackEvent(post, 'preview');
   postList.querySelectorAll('.post-card').forEach((button) => {
     button.classList.toggle('active', button.dataset.slug === slug);
   });
@@ -142,7 +143,7 @@ function renderPostPreview(post) {
       <p>${escapeHtml(post.summary || '')}</p>
       <div class="tag-row">${(post.tags || []).map((tag) => `<span class="pill">#${escapeHtml(tag)}</span>`).join('')}</div>
       <div class="preview-actions">
-        <a class="read-button" href="${escapeAttribute(getPostUrl(post))}">記事を読む</a>
+        <a class="read-button" href="${escapeAttribute(getPostUrl(post))}" onclick="trackReadClick('${escapeAttribute(post.slug || '')}')">記事を読む</a>
         ${post.sourceUrl ? `<a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a>` : ''}
       </div>
     </div>
@@ -374,18 +375,42 @@ function buildTrackedUrl(url, post, kind) {
 }
 
 function trackView(post) {
-  if (!post.clickTrackerUrl) {
+  trackEvent(post, 'view');
+}
+
+function trackReadClick(slug) {
+  const post = findPost(slug);
+  if (post) {
+    trackEvent(post, 'read');
+  }
+}
+
+function trackEvent(post, kind) {
+  if (!post || !post.clickTrackerUrl) {
     return;
   }
   const params = new URLSearchParams({
     action: 'event',
-    kind: 'view',
+    kind: kind || 'view',
     slug: post.slug || '',
     title: post.title || '',
-    referrer: document.referrer || ''
+    referrer: document.referrer || '',
+    t: String(Date.now())
   });
-  const img = new Image();
-  img.src = `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+  const url = `${post.clickTrackerUrl}${post.clickTrackerUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+  try {
+    fetch(url, { mode: 'no-cors', keepalive: true });
+  } catch (error) {
+    // Ignore tracking failures in the public UI.
+  }
+  const img = document.createElement('img');
+  img.alt = '';
+  img.width = 1;
+  img.height = 1;
+  img.style.position = 'absolute';
+  img.style.left = '-9999px';
+  img.src = url;
+  document.body.appendChild(img);
 }
 
 initializeTheme();
