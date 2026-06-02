@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AI、個人開発、ガジェット、カフェ、自然スポットを横断して紹介する個人メディア。">
+    <meta property="og:title" content="しろくまナレッジ">
+    <meta property="og:description" content="AI、個人開発、ガジェット、カフェ、自然スポットを横断して紹介する個人メディア。">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="しろくまナレッジ">
+    <meta name="twitter:card" content="summary">
+    <link rel="alternate" type="application/rss+xml" title="しろくまナレッジ RSS" href="./rss.xml">
+    <title>しろくまナレッジ</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Tech / Gear / Food / Nature</p>
+        <h1>しろくまナレッジ</h1>
+        <p class="lead">AIと個人開発、PC周辺ガジェット、カフェや景色の話題を、背景と使いどころまで整理して届けます。</p>
+      </div>
+      <div class="header-controls">
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="テーマを切り替える">Dark</button>
+        <nav class="category-nav" aria-label="カテゴリ">
+          <button type="button" data-category="all" class="active">すべて <span class="count">0</span></button>
+          <button type="button" data-category="it_ai">IT/AI <span class="count">0</span></button>
+          <button type="button" data-category="pc_gadget">ガジェット <span class="count">0</span></button>
+          <button type="button" data-category="food_cafe">カフェ/グルメ <span class="count">0</span></button>
+          <button type="button" data-category="nature_spot">自然/景色 <span class="count">0</span></button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="content-layout">
+        <div class="list-pane">
+          <h2>Latest Articles</h2>
+          <div id="post-list" class="post-list" aria-live="polite"></div>
+        </div>
+        <article id="post-detail" class="post-detail">
+          <p class="empty-state">記事を選ぶと本文が表示されます。</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div>
+          <strong>しろくまナレッジ</strong>
+          <p>記事には広告・アフィリエイトリンクを含む場合があります。出典を確認し、必要に応じて公式情報も参照してください。</p>
+        </div>
+        <nav class="footer-nav" aria-label="サイト情報">
+          <a href="./about.html">About</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./disclaimer.html">Disclaimer</a>
+          <a href="./contact.html">Contact</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
