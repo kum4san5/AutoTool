@@ -118,7 +118,7 @@ function renderPost(post) {
   document.title = post.seoTitle || post.title || 'しろくまナレッジ';
   postDetail.innerHTML = `
     <div class="post-meta">
-      <button type="button" class="back-button" onclick="closePost()">一覧へ戻る</button>
+      <button type="button" class="back-button" data-close-post>一覧へ戻る</button>
       <span>${escapeHtml(post.date || '')}</span>
       <span class="pill">${escapeHtml(post.category || 'Article')}</span>
       <span class="score">${Number(post.monetizationScore || 0)} pts</span>
@@ -130,9 +130,12 @@ function renderPost(post) {
     ${post.cta ? `<div class="cta-box">${escapeHtml(post.cta)}</div>` : ''}
     <div class="post-actions-bottom">
       ${post.sourceUrl ? `<a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a>` : ''}
-      <button type="button" class="back-button" onclick="closePost()">記事一覧へ戻る</button>
+      <button type="button" class="back-button" data-close-post>記事一覧へ戻る</button>
     </div>
   `;
+  postDetail.querySelectorAll('[data-close-post]').forEach((button) => {
+    button.addEventListener('click', closePost);
+  });
 }
 
 function renderPostPreview(post) {
@@ -143,11 +146,14 @@ function renderPostPreview(post) {
       <p>${escapeHtml(post.summary || '')}</p>
       <div class="tag-row">${(post.tags || []).map((tag) => `<span class="pill">#${escapeHtml(tag)}</span>`).join('')}</div>
       <div class="preview-actions">
-        <a class="read-button" href="${escapeAttribute(getPostUrl(post))}" onclick="trackReadClick('${escapeAttribute(post.slug || '')}')">記事を読む</a>
+        <a class="read-button" href="${escapeAttribute(getPostUrl(post))}" data-read-slug="${escapeAttribute(post.slug || '')}">記事を読む</a>
         ${post.sourceUrl ? `<a class="source-link" href="${escapeAttribute(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">出典を確認する</a>` : ''}
       </div>
     </div>
   `;
+  postDetail.querySelectorAll('[data-read-slug]').forEach((link) => {
+    link.addEventListener('click', () => trackReadClick(link.dataset.readSlug));
+  });
 }
 
 function closePost() {
@@ -295,18 +301,21 @@ function renderCategoryCounts() {
 
 function inferCategoryId(post) {
   const explicit = String(post.categoryId || '').trim();
-  if (['it_ai', 'pc_gadget', 'food_cafe', 'nature_spot'].indexOf(explicit) !== -1) {
+  if (['it_ai', 'pc_gadget', 'food_cafe', 'food_item', 'nature_spot'].indexOf(explicit) !== -1) {
     return explicit;
   }
 
   const text = `${post.category || ''} ${(post.tags || []).join(' ')} ${post.title || ''} ${post.summary || ''}`.toLowerCase();
-  if (/(ガジェット|pc|パソコン|キーボード|マウス|モニター|周辺機器|デスク)/i.test(text)) {
+  if (/(ガジェット|pc|パソコン|キーボード|マウス|モニター|周辺機器|スペック|性能|レビュー|比較|新製品)/i.test(text)) {
     return 'pc_gadget';
   }
-  if (/(カフェ|グルメ|コーヒー|ランチ|レストラン|喫茶|食|飲食)/i.test(text)) {
+  if (/(カフェ|コーヒー店|喫茶|ランチ|レストラン|スイーツ店|パン屋|ベーカリー|飲食店|作業カフェ|モーニング|店舗|お店|新店|オープン)/i.test(text)) {
     return 'food_cafe';
   }
-  if (/(自然|景色|旅行|観光|公園|山|海|川|森|絶景|散歩|アウトドア)/i.test(text)) {
+  if (/(食品|飲料|ドリンク|レシピ|料理|食材|お菓子|スイーツ|コーヒー豆|紅茶|冷凍食品|ミールキット|お取り寄せ|新商品|限定商品|調味料|キッチン用品)/i.test(text)) {
+    return 'food_item';
+  }
+  if (/(屋久島|日光|嵐山|上高地|箱根|軽井沢|白川郷|自然|景色|観光地|名所|公園|庭園|神社|寺|滝|島|絶景|紅葉|桜|散策|旅行先)/i.test(text)) {
     return 'nature_spot';
   }
   return 'it_ai';
