@@ -40,7 +40,6 @@ function renderList() {
       <div class="post-meta">
         <span>${escapeHtml(post.date || '')}</span>
         <span class="pill">${escapeHtml(post.category || 'Article')}</span>
-        <span class="score">${Number(post.monetizationScore || 0)} pts</span>
       </div>
       <h3>${escapeHtml(post.title || '')}</h3>
       <p>${escapeHtml(post.summary || '')}</p>
@@ -121,7 +120,6 @@ function renderPost(post) {
       <button type="button" class="back-button" data-close-post>一覧へ戻る</button>
       <span>${escapeHtml(post.date || '')}</span>
       <span class="pill">${escapeHtml(post.category || 'Article')}</span>
-      <span class="score">${Number(post.monetizationScore || 0)} pts</span>
     </div>
     <h2>${escapeHtml(post.title || '')}</h2>
     <p class="summary">${escapeHtml(post.summary || post.hook || '')}</p>
